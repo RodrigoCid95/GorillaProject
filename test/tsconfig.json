@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "baseUrl": "src",
+    "outDir": "dist",
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "target": "ES6",
+    "moduleResolution": "Node",
+    "sourceMap": true,
+    "paths": {
+      "config/*": ["config/*"],
+      "libraries/*": ["libraries/*"],
+      "models/*": ["models/*"],
+      "types/*": ["types/*"]
+    }
+  }
+}

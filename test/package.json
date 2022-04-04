@@ -1,0 +1,21 @@
+{
+  "name": "test",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "start": "gorilla start",
+    "build": "gorilla build",
+    "build:prod": "gorilla build --prod --minify"
+  },
+  "gorilla": {
+    "type": "http-sockets",
+    "boot": "auto",
+    "public-paths": ["public"]
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "gorilla": "file:../gorilla"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "name": "gorilla",
+  "version": "1.0.0",
+  "description": "",
+  "main": "cli/index.js",
+  "bin": {
+    "gorilla": "cli/index.js"
+  },
+  "scripts": {
+    "start": "node ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "types": "index.d.ts",
+  "dependencies": {
+    "esbuild": "^0.14.29",
+    "express": "^4.17.3",
+    "socket.io": "^4.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.23"
+  }
+}
