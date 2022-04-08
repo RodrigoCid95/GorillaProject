@@ -141,9 +141,11 @@ export type OptionsHttpServer = {
   onMessage?: (message: string) => void
 }
 export function initHttpServer(options: OptionsHttpServer): http.Server | undefined
-type GorillaHTTP = {
-  Methods: any,
-  On,
-  Prefix
-}
-export default GorillaHTTP
+/**
+ * The object of an express.js response.
+ */
+declare type Response = express.Response;
+/**
+ * The object of an express.js request.
+ */
+declare type Request = express.Request;

@@ -109,10 +109,10 @@ module.exports.ModelsManager = class ModelsManager {
         })
         delete modelClass.prototype.libs
       }
-      const instanceModel = new modelClass()
       for (const { propertyLib, lib } of libs) {
-        instanceModel[propertyLib] = lib
+        modelClass.prototype[propertyLib] = lib
       }
+      const instanceModel = new modelClass()
       this.instances[nameClass] = instanceModel
     }
   }

@@ -76,10 +76,10 @@ module.exports.initHttpServer = function initHttpServer({ returnInstance = false
         })
         delete httpControllersClass.prototype.models
       }
-      const instanceHttpController = new httpControllersClass()
       for (const { propertyMod, model } of models) {
-        instanceHttpController[propertyMod] = model
+        httpControllersClass.prototype[propertyMod] = model
       }
+      const instanceHttpController = new httpControllersClass()
       let prefix = ''
       if (instanceHttpController.prefix) {
         prefix = `/${instanceHttpController.prefix}`
@@ -151,6 +151,7 @@ module.exports.initHttpServer = function initHttpServer({ returnInstance = false
   server.listen(port, () => {
     onMessage(`Servidor corriendo en: http://localhost:${port}${externalIp ? ` y http://${externalIp}:${port}` : ''}`)
   })
+
   if (returnInstance) {
     return server
   }

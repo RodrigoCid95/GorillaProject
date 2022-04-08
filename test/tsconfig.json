@@ -9,6 +9,7 @@
     "target": "ES6",
     "moduleResolution": "Node",
     "sourceMap": true,
+    "strictNullChecks": true,
     "paths": {
       "config/*": ["config/*"],
       "libraries/*": ["libraries/*"],

@@ -10,7 +10,7 @@ form.addEventListener('submit', function (e) {
   }
 })
 
-socket.on('chat message', function(msg) {
+socket.on('chat message', function (msg) {
   const item = document.createElement('li');
   item.textContent = msg;
   messages.appendChild(item);

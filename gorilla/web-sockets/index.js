@@ -48,11 +48,11 @@ module.exports.initSocketsServer = function initSocketsServer({ http, mm, lm, di
         })
         delete socketsControllersClass.prototype.models
       }
-      const instanceSocketsController = new socketsControllersClass()
-      instanceSocketsController['io'] = io
+      socketsControllersClass.prototype['io'] = io
       for (const { propertyMod, model } of models) {
-        instanceSocketsController[propertyMod] = model
+        socketsControllersClass.prototype[propertyMod] = model
       }
+      const instanceSocketsController = new socketsControllersClass()
       let prefix = ''
       if (instanceSocketsController.prefix) {
         prefix = `/${instanceSocketsController.prefix}`

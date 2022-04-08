@@ -6,6 +6,10 @@ const gorillaHttpConfig: GorillaHTTPConfigProfile = {
       route: '/',
       dir: 'public'
     }
-  ]
+  ],
+  dev: {
+    showExternalIp: true,
+    interfaceNetwork: 'Wi-Fi'
+  }
 }
 export default gorillaHttpConfig

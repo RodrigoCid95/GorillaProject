@@ -2,6 +2,7 @@
 'use strict';
 (async function () {
   //#region Declarations
+  
   const path = require('path')
   const { Flags, ConfigManager, LibraryManager, ModelsManager } = require('./../core')
   const flags = new Flags()
