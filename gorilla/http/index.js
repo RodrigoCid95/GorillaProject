@@ -135,7 +135,7 @@ module.exports.initHttpServer = function initHttpServer({ returnInstance = false
   }
   if (engineTemplates) {
     app.engine(engineTemplates.ext, engineTemplates.callback);
-    app.set('views', Path.normalize(engineTemplates.dirViews));
+    app.set('views', Path.resolve(mainDir, engineTemplates.dirViews));
     app.set('view engine', engineTemplates.name);
   }
   if (events && events.afterConfig) {
