@@ -1,5 +1,5 @@
 import { LibraryManager, ModelsManager } from './../core'
-import SocketIO from 'socket.io'
+import * as SocketIO from 'socket.io'
 import * as http from 'http'
 /**
  * Register a new handler for the given event.
@@ -51,7 +51,7 @@ export type Socket = SocketIO.Socket
 /**
  * Config sockets server.
  */
-export interface GorilaSocketsConfig {
+export interface GorillaSocketsConfig {
   /**
   * Port the server is listening on.
   * @type {number}
@@ -68,11 +68,11 @@ export interface GorilaSocketsConfig {
     /**
      * Called before returning a response to the client.
      */
-    onBeforeToAnswer?: (response: SocketsResponse | ResponseError, socket?: Socket, getLibraryInstance?: LibraryManager['getLibrary']) => SocketsResponse | ResponseError
+    onBeforeToAnswer?: (response: SocketsResponse | ResponseError, socket: Socket, getLibraryInstance: LibraryManager['getLibrary']) => SocketsResponse | ResponseError
     /**
      * Called when a call is made by the customer.
      */
-    onANewRequest?: (request: any[], socket?: Socket, getLibraryInstance?: LibraryManager['getLibrary']) => any[]
+    onANewRequest?: (request: any[], socket: Socket, getLibraryInstance: LibraryManager['getLibrary']) => any[]
     /**
      * Called when a client disconnects.
      */
@@ -91,7 +91,7 @@ export type OptionsSocketsServer = {
   mm: ModelsManager
   lm: LibraryManager
   distDir: string
-  gorilaSocketsConfig?: GorilaSocketsConfig
+  gorillaSocketsConfig?: GorillaSocketsConfig
   onError?: (error: any) => void
 }
 export function initSocketsServer(options: OptionsSocketsServer): void

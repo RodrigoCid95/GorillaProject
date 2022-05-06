@@ -14,21 +14,21 @@ module.exports.Prefix = function Prefix(prefix) {
     }
   }
 }
-module.exports.initSocketsServer = function initSocketsServer({ http, mm, lm, distDir, gorilaSocketsConfig = {}, onError = console.error }) {
+module.exports.initSocketsServer = function initSocketsServer({ http, mm, lm, distDir, gorillaSocketsConfig = {}, onError = console.error }) {
   const path = require('path')
   const SocketIO = require('socket.io')
   let io = null
   let port = 80
   if (http) {
-    io = new SocketIO.Server(http, gorilaSocketsConfig)
+    io = new SocketIO.Server(http, gorillaSocketsConfig)
   } else {
-    if (gorilaSocketsConfig.port) {
-      port = gorilaSocketsConfig.port
+    if (gorillaSocketsConfig.port) {
+      port = gorillaSocketsConfig.port
     }
     if (process.env.PORT) {
       port = parseInt(process.env.PORT)
     }
-    io = SocketIO(port, gorilaSocketsConfig)
+    io = SocketIO(port, gorillaSocketsConfig)
   }
   const socketsControllersPath = path.join(distDir, 'socketsControllers')
   const socketsControllersClasses = require(socketsControllersPath)
@@ -55,10 +55,11 @@ module.exports.initSocketsServer = function initSocketsServer({ http, mm, lm, di
       const instanceSocketsController = new socketsControllersClass()
       let prefix = ''
       if (instanceSocketsController.prefix) {
-        prefix = `/${instanceSocketsController.prefix}`
+        prefix = `${instanceSocketsController.prefix}`
         delete instanceSocketsController.prefix
       }
-      for (const { nameEvent, propertyKey } of routes) {
+      for (let { nameEvent, propertyKey } of routes) {
+        nameEvent = prefix !== '' ? `${prefix} ${nameEvent}` : nameEvent
         sRoutes.push({
           nameEvent,
           callback: instanceSocketsController[propertyKey].bind(instanceSocketsController)
@@ -67,8 +68,8 @@ module.exports.initSocketsServer = function initSocketsServer({ http, mm, lm, di
     }
   }
   io.on('connect', socket => {
-    if (gorilaSocketsConfig.events && gorilaSocketsConfig.events.onConnect) {
-      gorilaSocketsConfig.events.onConnect(socket)
+    if (gorillaSocketsConfig.events && gorillaSocketsConfig.events.onConnect) {
+      gorillaSocketsConfig.events.onConnect(socket)
     }
     for (const { nameEvent, callback } of sRoutes) {
       socket.on(nameEvent, (...args) => {
@@ -76,15 +77,15 @@ module.exports.initSocketsServer = function initSocketsServer({ http, mm, lm, di
         let argmnts = args.filter(arg => typeof arg !== 'function')
         const { getLibrary } = lm
         try {
-          if (gorilaSocketsConfig.events && gorilaSocketsConfig.events.onANewRequest) {
-            argmnts = gorilaSocketsConfig.events.onANewRequest(argmnts, socket, getLibrary);
+          if (gorillaSocketsConfig.events && gorillaSocketsConfig.events.onANewRequest) {
+            argmnts = gorillaSocketsConfig.events.onANewRequest(argmnts, socket, getLibrary.bind(lm));
           }
-          argmnts.push(socket, io)
+          argmnts.push(socket)
           let contentReturn = callback(...argmnts)
           if (contentReturn instanceof Promise) {
             contentReturn.then((response) => {
-              if (gorilaSocketsConfig.events && gorilaSocketsConfig.events.onBeforeToAnswer) {
-                response = socketsConfig.events.onBeforeToAnswer(response, socket, getLibrary)
+              if (gorillaSocketsConfig.events && gorillaSocketsConfig.events.onBeforeToAnswer) {
+                response = socketsConfig.events.onBeforeToAnswer(response, socket, getLibrary.bind(lm))
               }
               if (end) {
                 end(response)
@@ -103,8 +104,8 @@ module.exports.initSocketsServer = function initSocketsServer({ http, mm, lm, di
               onError(JSON.stringify(end))
             });
           } else {
-            if (gorilaSocketsConfig.events && gorilaSocketsConfig.events.onBeforeToAnswer) {
-              contentReturn = socketsConfig.events.onBeforeToAnswer(contentReturn, socket, getLibrary)
+            if (gorillaSocketsConfig.events && gorillaSocketsConfig.events.onBeforeToAnswer) {
+              contentReturn = gorillaSocketsConfig.events.onBeforeToAnswer(contentReturn, socket, getLibrary.bind(lm))
             }
             if (end) {
               end(contentReturn)
@@ -120,8 +121,8 @@ module.exports.initSocketsServer = function initSocketsServer({ http, mm, lm, di
             stack: error.stack
           }
           onError(JSON.stringify(end))
-          if (gorilaSocketsConfig.events && gorilaSocketsConfig.events.onBeforeToAnswer) {
-            error = gorilaSocketsConfig.events.onBeforeToAnswer(error, socket, getLibrary)
+          if (gorillaSocketsConfig.events && gorillaSocketsConfig.events.onBeforeToAnswer) {
+            error = gorillaSocketsConfig.events.onBeforeToAnswer(error, socket, getLibrary)
           }
           if (end) {
             end(contentReturn)

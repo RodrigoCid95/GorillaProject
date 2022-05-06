@@ -13,8 +13,7 @@
     "paths": {
       "config/*": ["config/*"],
       "libraries/*": ["libraries/*"],
-      "models/*": ["models/*"],
-      "types/*": ["types/*"]
+      "models/*": ["models/*"]
     }
   }
 }

@@ -46,7 +46,7 @@
       mm,
       lm,
       distDir,
-      gorilaSocketsConfig: cm.getConfig('gorilaSocketsConfig'),
+      gorillaSocketsConfig: cm.getConfig('gorillaSocketsConfig'),
       onError: error => process.send(error)
     })
   } else if (typeServer === 'http-sockets') {
@@ -65,7 +65,7 @@
       mm,
       lm,
       distDir,
-      gorilaSocketsConfig: cm.getConfig('gorilaSocketsConfig'),
+      gorillaSocketsConfig: cm.getConfig('gorillaSocketsConfig'),
       onError: error => process.send(error)
     })
   } else {
