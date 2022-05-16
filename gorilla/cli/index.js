@@ -39,7 +39,7 @@
     }
 
     if (type === 'sockets' || type === 'http-sockets') {
-      modules.push({ polyfill: 'sockets', input: path.join(sourceDir, 'controllers', 'sockets.ts'), output: path.join(distDir, 'socketsControllers.js') })
+      modules.push({ input: path.join(sourceDir, 'controllers', 'sockets.ts'), output: path.join(distDir, 'socketsControllers.js') })
     }
 
     if (boot === 'manual') {
@@ -117,14 +117,14 @@
           },
           dependencies: {
             ...(pack.dependencies || {}),
-            gorilla: 'file:../gorilla'
+            gorilla: 'file:./gorilla'
           },
           licence: pack.licence || 'ISC'
         }
         if (type === 'http' || type === 'http-sockets') {
           newPackage.dependencies['express'] = '^4.17.3'
         }
-        if (type === 'sockets' || type === 'sockets') {
+        if (type === 'sockets' || type === 'http-sockets') {
           newPackage.dependencies['socket.io'] = '^4.4.1'
         }
         const rootdir = path.resolve(distDir, '..')
@@ -135,7 +135,12 @@
         }
         fs.mkdirSync(gorillaPath)
         fs.copyFileSync(path.join(__dirname, 'minify-code', 'core.js'), path.join(gorillaPath, 'core.js'))
-        fs.copyFileSync(path.join(__dirname, 'minify-code', 'http.js'), path.join(gorillaPath, 'http.js'))
+        if (type === 'http' || type === 'http-sockets') {
+          fs.copyFileSync(path.join(__dirname, 'minify-code', 'http.js'), path.join(gorillaPath, 'http.js'))
+        }
+        if (type === 'sockets' || type === 'http-sockets') {
+          fs.copyFileSync(path.join(__dirname, 'minify-code', 'web-sockets.js'), path.join(gorillaPath, 'web-sockets.js'))
+        }
         const publicPaths = gorillaSettings['public-paths'] || []
         for (const publicPath of publicPaths) {
           const srcDir = path.join(mainDir, publicPath)

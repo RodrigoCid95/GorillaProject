@@ -1,15 +1,18 @@
 import { GorillaHTTPConfigProfile } from 'gorilla/http'
+import { renderFile } from 'pug'
 const gorillaHttpConfig: GorillaHTTPConfigProfile = {
-  port: 3000,
+  port: 5000,
   pathsPublic: [
     {
       route: '/',
       dir: 'public'
     }
   ],
-  dev: {
-    showExternalIp: true,
-    interfaceNetwork: 'Wi-Fi'
+  engineTemplates: {
+    ext: 'pug',
+    callback: renderFile,
+    name: 'pug',
+    dirViews: 'views'
   }
 }
 export default gorillaHttpConfig

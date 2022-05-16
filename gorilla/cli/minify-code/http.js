@@ -1,4 +1,158 @@
-module.exports.On = function On(e,r){return(o,s,t)=>{o.hasOwnProperty("routes")||(o.routes=[]),e=Array.isArray(e)?e:[e];const a=s,n=[s];if("object"==typeof r){if(r.beforeMiddlewares)for(const e of r.beforeMiddlewares)o.hasOwnProperty(e)?n.unshift(e):(console.error("El middelware "+e+" no está declarado!"),process.exit());if(r.afterMiddlewares)for(const e of r.afterMiddlewares)o.hasOwnProperty(e)?n.push(e):(console.error("El middleware "+e+" no está declarado!"),process.exit())}return e.forEach((function(e){o.routes.push({path:"string"==typeof r?r:r.path,method:e,func:a,middlewares:n})})),t}}
-module.exports.Prefix = function Prefix(n){return function(e){return class extends e{prefix=n}}}
-module.exports.Methods = {GET: 'get',POST: 'post',PUT: 'put',DELETE: 'delete'}
-module.exports.initHttpServer = function initHttpServer({returnInstance:e=!1,mm:t,distDir:o,mainDir:r,gorillaHttpConfig:n={},onMessage:s=console.log}){const i=require("path"),a=require("express");let p=a();const c=require("http").createServer(p),f=i.join(o,"httpControllers"),l=require(f),d=[];for(const e in l){const o=l[e];if(o.prototype.routes){const e=o.prototype.routes;delete o.prototype.routes;let r=[];o.prototype.models&&(r=o.prototype.models.map((({propertyMod:e,model:o})=>({propertyMod:e,model:t.getModel(o)}))),delete o.prototype.models);const n=new o;for(const{propertyMod:e,model:t}of r)n[e]=t;let s="";n.prefix&&(s=`/${n.prefix}`,delete n.prefix);const i=a.Router();for(let{path:t,middlewares:o,method:r,func:a}of e)if(t=s+t,o){const e=o.map((e=>n[e].bind(n)));i[r](t,e)}else{const e=n[a].bind(n);i[r](t,e)}d.push(i)}}const{port:u=(process.env.PORT?parseInt(process.env.PORT):80),dev:g,events:m,pathsPublic:y,engineTemplates:h}=n;p.set("port",u);let b=null;if(g&&g.showExternalIp){const e=require("os").networkInterfaces();if(g.interfaceNetwork){const t=e[g.interfaceNetwork];t?b=t.find((e=>"IPv4"==e.family)).address:(console.error(`\nLa interfáz de red "${g.interfaceNetwork}" no existe!.\nSe pueden usar las isguientes interfaces:\n${Object.keys(e).join(", ")}`),console.error("\nLa interfáz de red "+g.interfaceNetwork+" no existe!.\nSe pueden usar las isguientes interfaces:\n"+Object.keys(e).join(", ")))}else console.error("\nNo se definió una interfaz de red.\nSe pueden usar las isguientes interfaces:\n"+Object.keys(e).join(", "))}m&&m.beforeConfig&&(p=m.beforeConfig(p)),y&&y.forEach((e=>{const t=i.resolve(r,e.dir);p.use(e.route,a.static(t))})),h&&(p.engine(h.ext,h.callback),p.set("views",i.normalize(h.dirViews)),p.set("view engine",h.name)),m&&m.afterConfig&&(p=m.afterConfig(p)),p.use(a.json());for(const e of d)p.use(e);if(m&&m.beforeStarting&&m.beforeStarting(p),c.listen(u,(()=>{s(`Servidor corriendo en: http://localhost:${u}${b?` y http://${b}:${u}`:""}`)})),e)return c}
+module.exports.On = function On(methods, args) {
+  return (target, propertyKey, descriptor) => {
+    if (!target.hasOwnProperty('routes')) {
+      target.routes = []
+    }
+    methods = Array.isArray(methods) ? methods : [methods]
+    const fun = propertyKey
+    const middlewares = [propertyKey]
+    if (typeof args === 'object') {
+      if (args.beforeMiddlewares) {
+        for (const middleware of args.beforeMiddlewares) {
+          if (!target.hasOwnProperty(middleware)) {
+            console.error('El middelware ' + middleware + ' no está declarado!')
+            process.exit()
+          } else {
+            middlewares.unshift(middleware)
+          }
+        }
+      }
+      if (args.afterMiddlewares) {
+        for (const middleware of args.afterMiddlewares) {
+          if (!target.hasOwnProperty(middleware)) {
+            console.error('El middleware ' + middleware + ' no está declarado!')
+            process.exit()
+          } else {
+            middlewares.push(middleware)
+          }
+        }
+      }
+    }
+    methods.forEach(function (method) {
+      target.routes.push({
+        path: typeof args === 'string' ? args : args.path,
+        method: method,
+        func: fun,
+        middlewares,
+      })
+    })
+    return descriptor
+  }
+}
+module.exports.Prefix = function Prefix(pre) {
+  return function (constructor) {
+    return class extends constructor {
+      prefix = pre;
+    }
+  }
+}
+module.exports.Methods = {
+  GET: 'get',
+  POST: 'post',
+  PUT: 'put',
+  DELETE: 'delete'
+}
+module.exports.initHttpServer = function initHttpServer({ returnInstance = false, mm, distDir, mainDir, gorillaHttpConfig = {}, onMessage = console.log }) {
+  const Path = require('path')
+  const express = require('express')
+  let app = express()
+  const http = require('http')
+  const server = http.createServer(app)
+  const httpControllersPath = Path.join(distDir, 'httpControllers')
+  const httpControllersClasses = require(httpControllersPath)
+  const routers = []
+  for (const nameClass in httpControllersClasses) {
+    const httpControllersClass = httpControllersClasses[nameClass]
+    if (httpControllersClass.prototype.routes) {
+      const routes = httpControllersClass.prototype.routes
+      delete httpControllersClass.prototype.routes
+      let models = []
+      if (httpControllersClass.prototype.models) {
+        models = httpControllersClass.prototype.models.map(({ propertyMod, model }) => {
+          return {
+            propertyMod,
+            model: mm.getModel(model)
+          }
+        })
+        delete httpControllersClass.prototype.models
+      }
+      for (const { propertyMod, model } of models) {
+        httpControllersClass.prototype[propertyMod] = model
+      }
+      const instanceHttpController = new httpControllersClass()
+      let prefix = ''
+      if (instanceHttpController.prefix) {
+        prefix = `/${instanceHttpController.prefix}`
+        delete instanceHttpController.prefix
+      }
+      const router = express.Router()
+      for (let { path, middlewares, method, func } of routes) {
+        path = prefix + path
+        if (middlewares) {
+          const midd = middlewares.map(middleware => instanceHttpController[middleware].bind(instanceHttpController))
+          router[method](path, midd)
+        } else {
+          const fn = instanceHttpController[func].bind(instanceHttpController)
+          router[method](path, fn)
+        }
+      }
+      routers.push(router)
+    }
+  }
+  const {
+    port = (process.env.PORT ? parseInt(process.env.PORT) : 80),
+    dev,
+    events,
+    pathsPublic,
+    engineTemplates
+  } = gorillaHttpConfig
+  app.set('port', port)
+  let externalIp = null
+  if (dev && dev.showExternalIp) {
+    const interfaces = require("os").networkInterfaces()
+    if (dev.interfaceNetwork) {
+      const inter = interfaces[dev.interfaceNetwork]
+      if (inter) {
+        externalIp = inter.find(item => {
+          return item.family == 'IPv4'
+        }).address
+      } else {
+        console.error(`\nLa interfáz de red "${dev.interfaceNetwork}" no existe!.\nSe pueden usar las isguientes interfaces:\n${Object.keys(interfaces).join(', ')}`)
+        console.error('\nLa interfáz de red ' + dev.interfaceNetwork + ' no existe!.\nSe pueden usar las isguientes interfaces:\n' + Object.keys(interfaces).join(', '))
+      }
+    } else {
+      console.error('\nNo se definió una interfaz de red.\nSe pueden usar las isguientes interfaces:\n' + Object.keys(interfaces).join(', '))
+    }
+  }
+  if (events && events.beforeConfig) {
+    app = events.beforeConfig(app)
+  }
+  if (pathsPublic) {
+    pathsPublic.forEach(path => {
+      const dirPublic = Path.resolve(mainDir, path.dir)
+      app.use(path.route, express.static(dirPublic))
+    });
+  }
+  if (engineTemplates) {
+    app.engine(engineTemplates.ext, engineTemplates.callback);
+    app.set('views', Path.resolve(mainDir, engineTemplates.dirViews));
+    app.set('view engine', engineTemplates.name);
+  }
+  if (events && events.afterConfig) {
+    app = events.afterConfig(app);
+  }
+  app.use(express.json())
+  for (const router of routers) {
+    app.use(router)
+  }
+  if (events && events.beforeStarting) {
+    events.beforeStarting(app)
+  }
+  server.listen(port, () => {
+    onMessage(`Servidor corriendo en: http://localhost:${port}${externalIp ? ` y http://${externalIp}:${port}` : ''}`)
+  })
+
+  if (returnInstance) {
+    return server
+  }
+}

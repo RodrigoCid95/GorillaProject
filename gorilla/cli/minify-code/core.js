@@ -1,6 +1,122 @@
-module.exports.ConfigManager = class ConfigManager{constructor(r){this.profiles=r}getConfig(r){return this.profiles[r]||{}}}
-module.exports.Flags = class Flags{constructor(){const s=process.argv;let r,t,a,g;for(this.args={},r=0;r<s.length;r++)a=s[r].trim(),t=a.replace(/^\-+/,""),t===a?(g&&(this.args[g]=t),g=null):(g=t,this.args[g]=!0)}get(s){return this.args[s]}}
-module.exports.Lib = function Lib(i){return function(n,b){n.hasOwnProperty("libs")||(n.libs=[]),n.libs.push({propertyLib:b,nameLib:i})}}
-module.exports.LibraryManager = class LibraryManager{constructor(r,i){this.configManager=r,this.libraries=i,this.librariesInstances={}}async build(r){const i=Object.keys(this.libraries);for(const a of i){r&&r(`Iniciando librería ${a}...`);let i=(0,this.libraries[a])(this.configManager.getConfig(a));try{this.librariesInstances[a]=i instanceof Promise?await i:i}catch(r){throw new Error(`Error al cargar la librería ${a}`)}r&&r(`Librería ${a} lista!`)}this.isCompiled=!0}getLibrary(r){return this.librariesInstances[r]}}
-module.exports.Model = function Model(o){return function(e,d){e.hasOwnProperty("models")||(e.models=[]),e.models.push({propertyMod:d,model:o})}}
-module.exports.ModelsManager = class ModelsManager{constructor(t,e){this.instances={};for(const o in t){const s=t[o];let r=[];s.prototype.libs&&(r=s.prototype.libs.map((({propertyLib:t,nameLib:o})=>({propertyLib:t,lib:e.getLibrary(o)}))),delete s.prototype.libs);const i=new s;for(const{propertyLib:t,lib:e}of r)i[t]=e;this.instances[o]=i}}getModel(t){return this.instances[t]}}
+module.exports.ConfigManager = class ConfigManager {
+  constructor(profiles) {
+    this.profiles = profiles
+  }
+  getConfig(name) {
+    return this.profiles[name] || {}
+  }
+}
+module.exports.Flags = class Flags {
+  /**
+   * Constructor.
+   */
+  constructor() {
+    const argList = process.argv;
+    this.args = {}
+    let a;
+    let opt
+    let thisOpt
+    let curOpt;
+    for (a = 0; a < argList.length; a++) {
+      thisOpt = argList[a].trim();
+      opt = thisOpt.replace(/^\-+/, '');
+      if (opt === thisOpt) {
+        if (curOpt) this.args[curOpt] = opt;
+        curOpt = null;
+      }
+      else {
+        curOpt = opt;
+        this.args[curOpt] = true;
+      }
+    }
+  }
+  /**
+   * Look for a convert argument from the command line.
+   * @param {string} name Argument name.
+   * @returns {string | boolean} Returns the value of a variable.
+   */
+  get(name) {
+    return this.args[name];
+  }
+}
+module.exports.Lib = function Lib(nameLib) {
+  return function (target, propertyKey) {
+    if (!target.hasOwnProperty('libs')) {
+      target.libs = []
+    }
+    target.libs.push({
+      propertyLib: propertyKey,
+      nameLib
+    })
+  }
+}
+module.exports.LibraryManager = class LibraryManager {
+  constructor(configManager, libraries) {
+    this.configManager = configManager;
+    this.libraries = libraries;
+    this.librariesInstances = {};
+  }
+  async build(log = undefined) {
+    const nameLibs = Object.keys(this.libraries)
+    for (const name of nameLibs) {
+      if (log) {
+        log(`Iniciando librería ${name}...`)
+      }
+      const library = this.libraries[name]
+      let contentReturn = library(this.configManager.getConfig(name))
+      try {
+        if (contentReturn instanceof Promise) {
+          this.librariesInstances[name] = await contentReturn;
+        } else {
+          this.librariesInstances[name] = contentReturn;
+        }
+      } catch (error) {
+        throw new Error(`Error al cargar la librería ${name}`)
+      }
+      if (log) {
+        log(`Librería ${name} lista!`)
+      }
+    }
+    this.isCompiled = true;
+  }
+  getLibrary(name) {
+    return this.librariesInstances[name]
+  }
+}
+module.exports.Model = function Model(model) {
+  return function (target, propertyKey) {
+    if (!target.hasOwnProperty('models')) {
+      target.models = []
+    }
+    target.models.push({
+      propertyMod: propertyKey,
+      model
+    })
+  }
+}
+module.exports.ModelsManager = class ModelsManager {
+  constructor(modelClasses, lm) {
+    this.instances = {}
+    for (const nameClass in modelClasses) {
+      const modelClass = modelClasses[nameClass]
+      let libs = []
+      if (modelClass.prototype.libs) {
+        libs = modelClass.prototype.libs.map(({ propertyLib, nameLib }) => {
+          return {
+            propertyLib,
+            lib: lm.getLibrary(nameLib)
+          }
+        })
+        delete modelClass.prototype.libs
+      }
+      for (const { propertyLib, lib } of libs) {
+        modelClass.prototype[propertyLib] = lib
+      }
+      const instanceModel = new modelClass()
+      this.instances[nameClass] = instanceModel
+    }
+  }
+  getModel(name) {
+    return this.instances[name]
+  }
+}

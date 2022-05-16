@@ -18,6 +18,10 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/pug": "^2.0.6",
     "gorilla": "file:../gorilla"
+  },
+  "dependencies": {
+    "pug": "^3.0.2"
   }
 }

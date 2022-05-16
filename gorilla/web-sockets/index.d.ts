@@ -51,7 +51,7 @@ export type Socket = SocketIO.Socket
 /**
  * Config sockets server.
  */
-export interface GorillaSocketsConfig {
+export interface GorillaSocketsConfig extends Partial<SocketIO.ServerOptions> {
   /**
   * Port the server is listening on.
   * @type {number}

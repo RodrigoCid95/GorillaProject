@@ -39,10 +39,10 @@ module.exports.On = function On(methods, args) {
     return descriptor
   }
 }
-module.exports.Prefix = function Prefix(prefix) {
+module.exports.Prefix = function Prefix(pre) {
   return function (constructor) {
     return class extends constructor {
-      prefix = prefix;
+      prefix = pre;
     }
   }
 }
