@@ -102,9 +102,11 @@ module.exports.initHttpServer = function initHttpServer({ returnInstance = false
   const {
     port = (process.env.PORT ? parseInt(process.env.PORT) : 80),
     dev,
-    events,
+    events = {},
+    middlewares = [],
     pathsPublic,
-    engineTemplates
+    engineTemplates,
+    optionsUrlencoded
   } = gorillaHttpConfig
   app.set('port', port)
   let externalIp = null
@@ -124,8 +126,14 @@ module.exports.initHttpServer = function initHttpServer({ returnInstance = false
       console.error('\nNo se definió una interfaz de red.\nSe pueden usar las isguientes interfaces:\n' + Object.keys(interfaces).join(', '))
     }
   }
-  if (events && events.beforeConfig) {
-    app = events.beforeConfig(app)
+  if (events.beforeConfig) {
+    events.beforeConfig(app)
+  }
+  if (optionsUrlencoded) {
+    app.use(express.urlencoded(optionsUrlencoded))
+  }
+  for (const middleware of middlewares) {
+    app.use(middleware)
   }
   if (pathsPublic) {
     pathsPublic.forEach(path => {
@@ -138,20 +146,22 @@ module.exports.initHttpServer = function initHttpServer({ returnInstance = false
     app.set('views', Path.resolve(mainDir, engineTemplates.dirViews));
     app.set('view engine', engineTemplates.name);
   }
-  if (events && events.afterConfig) {
-    app = events.afterConfig(app);
+  if (events.afterConfig) {
+    events.afterConfig(app);
   }
   app.use(express.json())
   for (const router of routers) {
     app.use(router)
   }
-  if (events && events.beforeStarting) {
-    events.beforeStarting(app)
+  if (events.onError) {
+    app.use(events.onError)
   }
   server.listen(port, () => {
     onMessage(`Servidor corriendo en: http://localhost:${port}${externalIp ? ` y http://${externalIp}:${port}` : ''}`)
   })
-
+  if (events.beforeStarting) {
+    events.beforeStarting(app)
+  }
   if (returnInstance) {
     return server
   }

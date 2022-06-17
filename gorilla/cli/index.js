@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 'use strict';
-((command) => {
+((command = 'start') => {
   if (command) {
     const fs = require('fs')
     const path = require('path')
@@ -23,9 +23,15 @@
     }
 
     const log = (message) => {
-      process.stdout.clearLine()
-      process.stdout.cursorTo(0)
-      process.stdout.write(message)
+      if (process.stdout.clearLine) {
+        process.stdout.clearLine()
+        process.stdout.cursorTo(0)
+      }
+      if (process.stdout.write) {
+        process.stdout.write(message)
+      } else {
+        console.log(message)
+      }
     }
 
     const modules = [

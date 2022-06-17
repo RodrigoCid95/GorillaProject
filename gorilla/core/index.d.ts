@@ -34,7 +34,7 @@ export class Flags {
    */
   get<T = any>(nameFlag: string): T
 }
-export type InitLibrary<P = {}, R = any> = (profile?: P) => R | Promise<R>
+export type InitLibrary<P = {}, R = any> = (profile: P) => R | Promise<R>
 export type InitLibraries = {
   [name: string]: InitLibrary
 }

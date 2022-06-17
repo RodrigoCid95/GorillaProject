@@ -61,6 +61,7 @@ export interface GorillaSocketsConfig extends Partial<SocketIO.ServerOptions> {
    * Events.
    */
   events?: {
+    onBeforeConfig?: (io: SocketIO.Server) => SocketIO.Server
     /**
      * Called when a new connection is created.
      */

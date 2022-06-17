@@ -30,6 +30,9 @@ module.exports.initSocketsServer = function initSocketsServer({ http, mm, lm, di
     }
     io = SocketIO(port, gorillaSocketsConfig)
   }
+  if (gorillaSocketsConfig.events && gorillaSocketsConfig.events.onBeforeConfig) {
+    io = gorillaSocketsConfig.events.onBeforeConfig(io)
+  }
   const socketsControllersPath = path.join(distDir, 'socketsControllers')
   const socketsControllersClasses = require(socketsControllersPath)
   const sRoutes = []

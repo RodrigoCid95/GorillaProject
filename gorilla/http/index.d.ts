@@ -99,6 +99,7 @@ export type Dev = {
  * Gorilla HTTP configuration profile.
  */
 export type GorillaHTTPConfigProfile = {
+  middlewares?: any[]
   /**
    * Configuration for body parser.
    */
@@ -111,18 +112,19 @@ export type GorillaHTTPConfigProfile = {
    * Events of Gorila HTTP.
    */
   events?: {
+    onError: (error: Error, request: Request, response: Response, next: Next) => void
     /**
      * Called before the express.js instance is configured.
      */
-    beforeConfig?: (app: express.Express) => express.Express;
+    beforeConfig?: (app: express.Express) => void;
     /**
      * Called after the express.js instance is configured.
      */
-    afterConfig?: (app: express.Express) => express.Express;
+    afterConfig?: (app: express.Express) => void;
     /**
      * Called after the server starts.
      */
-    beforeStarting?: (app: express.Express) => express.Express;
+    beforeStarting?: (app: express.Express) => void;
   };
   pathsPublic?: PathPublic[];
   dev?: Dev;
@@ -144,8 +146,9 @@ export function initHttpServer(options: OptionsHttpServer): http.Server | undefi
 /**
  * The object of an express.js response.
  */
-declare type Response = express.Response;
+export declare type Response = express.Response;
 /**
  * The object of an express.js request.
  */
-declare type Request = express.Request;
+export declare type Request = express.Request;
+export declare type Next = express.NextFunction;
