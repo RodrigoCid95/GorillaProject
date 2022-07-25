@@ -11,7 +11,8 @@
     "type": "http-sockets",
     "boot": "auto",
     "public-paths": [
-      "public"
+      "public",
+      "views"
     ]
   },
   "keywords": [],

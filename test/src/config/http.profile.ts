@@ -1,7 +1,7 @@
 import { GorillaHTTPConfigProfile } from 'gorilla/http'
 import { renderFile } from 'pug'
 const gorillaHttpConfig: GorillaHTTPConfigProfile = {
-  port: 5000,
+  port: 3000,
   pathsPublic: [
     {
       route: '/',

@@ -12,7 +12,7 @@
     const tsConfigPath = path.join(mainDir, 'tsconfig.json');
     const tsconfig = require(tsConfigPath);
     const pack = require(packagePath);
-    const external = Object.keys(pack.dependencies || { 'gorilla': null });
+    const external = [...Object.keys(pack.dependencies || { 'gorilla': null }), ...Object.keys(pack.devDependencies || { 'gorilla': null })];
     const gorillaSettings = pack.gorilla || {};
     const type = gorillaSettings.type || flags.get('type') || 'http';
     const boot = gorillaSettings.boot || 'auto';
