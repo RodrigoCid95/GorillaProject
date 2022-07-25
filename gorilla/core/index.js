@@ -1,21 +1,21 @@
 module.exports.ConfigManager = class ConfigManager {
   constructor(profiles) {
-    this.profiles = profiles
+    this.profiles = profiles;
   }
   getConfig(name) {
-    return this.profiles[name] || {}
+    return this.profiles[name] || {};
   }
-}
+};
 module.exports.Flags = class Flags {
   /**
    * Constructor.
    */
   constructor() {
     const argList = process.argv;
-    this.args = {}
+    this.args = {};
     let a;
-    let opt
-    let thisOpt
+    let opt;
+    let thisOpt;
     let curOpt;
     for (a = 0; a < argList.length; a++) {
       thisOpt = argList[a].trim();
@@ -23,8 +23,7 @@ module.exports.Flags = class Flags {
       if (opt === thisOpt) {
         if (curOpt) this.args[curOpt] = opt;
         curOpt = null;
-      }
-      else {
+      } else {
         curOpt = opt;
         this.args[curOpt] = true;
       }
@@ -38,18 +37,18 @@ module.exports.Flags = class Flags {
   get(name) {
     return this.args[name];
   }
-}
+};
 module.exports.Lib = function Lib(nameLib) {
-  return function (target, propertyKey) {
+  return (target, propertyKey) => {
     if (!target.hasOwnProperty('libs')) {
-      target.libs = []
+      target.libs = [];
     }
     target.libs.push({
       propertyLib: propertyKey,
       nameLib
-    })
-  }
-}
+    });
+  };
+};
 module.exports.LibraryManager = class LibraryManager {
   constructor(configManager, libraries) {
     this.configManager = configManager;
@@ -57,13 +56,13 @@ module.exports.LibraryManager = class LibraryManager {
     this.librariesInstances = {};
   }
   async build(log = undefined) {
-    const nameLibs = Object.keys(this.libraries)
+    const nameLibs = Object.keys(this.libraries);
     for (const name of nameLibs) {
       if (log) {
-        log(`Iniciando librería ${name}...`)
+        log(`Iniciando librería ${name}...`);
       }
-      const library = this.libraries[name]
-      let contentReturn = library(this.configManager.getConfig(name))
+      const library = this.libraries[name];
+      let contentReturn = library(this.configManager.getConfig(name));
       try {
         if (contentReturn instanceof Promise) {
           this.librariesInstances[name] = await contentReturn;
@@ -71,52 +70,50 @@ module.exports.LibraryManager = class LibraryManager {
           this.librariesInstances[name] = contentReturn;
         }
       } catch (error) {
-        throw new Error(`Error al cargar la librería ${name}`)
+        throw new Error(`Error al cargar la librería ${name}`);
       }
       if (log) {
-        log(`Librería ${name} lista!`)
+        log(`Librería ${name} lista!`);
       }
     }
     this.isCompiled = true;
   }
   getLibrary(name) {
-    return this.librariesInstances[name]
+    return this.librariesInstances[name];
   }
-}
+};
 module.exports.Model = function Model(model) {
-  return function (target, propertyKey) {
+  return (target, propertyKey) => {
     if (!target.hasOwnProperty('models')) {
-      target.models = []
+      target.models = [];
     }
     target.models.push({
       propertyMod: propertyKey,
       model
-    })
+    });
   }
-}
+};
 module.exports.ModelsManager = class ModelsManager {
   constructor(modelClasses, lm) {
-    this.instances = {}
+    this.instances = {};
     for (const nameClass in modelClasses) {
-      const modelClass = modelClasses[nameClass]
-      let libs = []
+      const modelClass = modelClasses[nameClass];
+      let libs = [];
       if (modelClass.prototype.libs) {
-        libs = modelClass.prototype.libs.map(({ propertyLib, nameLib }) => {
-          return {
-            propertyLib,
-            lib: lm.getLibrary(nameLib)
-          }
-        })
-        delete modelClass.prototype.libs
+        libs = modelClass.prototype.libs.map(({ propertyLib, nameLib }) => ({
+          propertyLib,
+          lib: lm.getLibrary(nameLib)
+        }));
+        delete modelClass.prototype.libs;
       }
       for (const { propertyLib, lib } of libs) {
-        modelClass.prototype[propertyLib] = lib
+        modelClass.prototype[propertyLib] = lib;
       }
-      const instanceModel = new modelClass()
-      this.instances[nameClass] = instanceModel
+      const instanceModel = new modelClass();
+      this.instances[nameClass] = instanceModel;
     }
   }
   getModel(name) {
-    return this.instances[name]
+    return this.instances[name];
   }
-}
+};

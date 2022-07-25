@@ -1,6 +1,13 @@
 import * as express from 'express'
 import * as http from 'http'
 import { ModelsManager } from '../core'
+export type ResponseError = {
+  code?: string
+  message: string
+  stack?: string
+}
+export type ErrorMiddleware = (error?: ResponseError, req?: Request, res?: Response, next?: Next) => void
+export type Middleware = (req?: Request, res?: Response, next?: Next) => void
 /**
  * Options to set a route.
  */
@@ -12,11 +19,11 @@ export type MethodOptions = {
   /**
    * List of middleware to be called before calling a method.
    */
-  beforeMiddlewares?: string[];
+  beforeMiddlewares?: Array<string | Middleware | ErrorMiddleware>;
   /**
    * List of middleware to be called after calling a method.
    */
-  afterMiddlewares?: string[];
+  afterMiddlewares?: Array<string | Middleware | ErrorMiddleware>;
 }
 export enum Methods {
   GET = 'get',
